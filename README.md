@@ -1,6 +1,6 @@
 # Certman
 
-[![license](https://img.shields.io/github/license/dyson/envvar.svg)](https://github.com/dyson/envvar/blob/master/LICENSE)
+[![license](https://img.shields.io/github/license/dyson/certman.svg)](https://github.com/dyson/certman/blob/master/LICENSE)
 
 Go TLS certificate reloading for the standard library http server.
 
