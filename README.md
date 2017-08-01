@@ -6,6 +6,10 @@ Go TLS certificate reloading for the standard library http server.
 
 Certman watches for changes to your certificate and key files and reloads them on change allowing the server to stay online during certificate changes. Useful for Let's Encrypt but also just in general as there's no reason to bring your servers down just to update certificates and keys.
 
+## Limitation
+
+Certman handles only a single certificate and key pair and responds to all requests with this pair. It ignores if the client is sending a server name using SNI. I'm not sure if there's a generic enough way to implemnet this that handles all use cases and as it's a niche feature I haven't needed I've left it out (pull requests welcome!). Certman's codebase is small so either fork the repo or copy and paste it into your project and modify it to your needs.
+
 ## Installation
 Using dep for dependency management (https://github.com/golang/dep):
 ```
