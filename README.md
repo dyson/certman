@@ -66,8 +66,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 Visit https://localhost:8080.
+
 Overwrite exising certificate and key using the openssl gen command above.
+
 Visit https://localhost:8080 again. Notice how existing requests are continued to be served by the old certificate.
+
 Visit https://localhost:8080 in another browser and see the new certificate is being served for new requests.
 
 Running example:
