@@ -27,7 +27,7 @@ $ go get github.com/dyson/certman
 Generate a cert and key:
 
 ```
-$ openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -sha256 -keyout server.key -out server.crt
+$ openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -sha256 -keyout /tmp/server.key -out /tmp/server.crt
 ```
 Basic server passing in a logger to log certman events:
 ```
@@ -46,7 +46,7 @@ import (
 func main() {
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 
-	cm, err := certman.NewCertMan("./server.crt", "./server.key")
+	cm, err := certman.NewCertMan("/tmp/server.crt", "/tmp/server.key")
 	if err != nil {
 		logger.Println(err)
 	}
@@ -85,11 +85,11 @@ $ go run main.go
 2017/08/01 16:05:23 certman: certificate and key loaded
 2017/08/01 16:05:23 certman: watching for cert and key change
 # Regenerated certificate and key here
-2017/08/01 16:06:30 certman: watch event: "/home/dyson/Code/go/src/github.com/dyson/scraps/certman/server.key": WRITE
+2017/08/01 16:06:30 certman: watch event: "/tmp/server.key": WRITE
 2017/08/01 16:06:30 certman: can't load cert or key file: tls: private key does not match public key
-2017/08/01 16:06:30 certman: watch event: "/home/dyson/Code/go/src/github.com/dyson/scraps/certman/server.key": WRITE
+2017/08/01 16:06:30 certman: watch event: "/tmp/server.key": WRITE
 2017/08/01 16:06:30 certman: can't load cert or key file: tls: private key does not match public key
-2017/08/01 16:06:32 certman: watch event: "/home/dyson/Code/go/src/github.com/dyson/scraps/certman/server.crt": WRITE
+2017/08/01 16:06:32 certman: watch event: "/tmp/server.crt": WRITE
 2017/08/01 16:06:32 certman: certificate and key loaded
 # Certificate loaded once the certificate and key can both be read correctly and they match
 ```
