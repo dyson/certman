@@ -30,7 +30,7 @@ Generate a cert and key:
 $ openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -sha256 -keyout /tmp/server.key -out /tmp/server.crt
 ```
 Basic server passing in a logger to log certman events:
-```
+```go
 package main
 
 import (
