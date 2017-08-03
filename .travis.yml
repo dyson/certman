@@ -1,0 +1,18 @@
+language: go
+sudo: false
+notifications:
+  email: false
+go:
+  - 1.7.x
+  - 1.8.x
+  - master
+
+before_install:
+  - go get github.com/mattn/goveralls
+before_script:
+  - npm install -g codeclimate-test-reporter
+script:
+  - $HOME/gopath/bin/goveralls -service=travis-ci
+  - for pkg in $PKGS; do go test -race -coverprofile=profile.out -covermode=atomic $pkg; if [[ -f profile.out ]]; then cat profile.out >> coverage.txt; rm profile.out; fi; done
+after_success:
+  - codeclimate-test-reporter < coverage.txt
