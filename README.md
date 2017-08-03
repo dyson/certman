@@ -1,5 +1,7 @@
 # Certman
 
+[![Go project version](https://badge.fury.io/go/github.com%2Fdyson%2Fcertman.svg)](https://badge.fury.io/go/github.com%2Fdyson%2Fcertman)
+
 [![license](https://img.shields.io/github/license/dyson/certman.svg)](https://github.com/dyson/certman/blob/master/LICENSE)
 
 Go TLS certificate reloading for the standard library http server.
