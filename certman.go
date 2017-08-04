@@ -119,7 +119,6 @@ loop:
 	}
 	cm.log.Printf("certman: stopped watching")
 	cm.watcher.Close()
-	close(cm.watching)
 }
 
 // GetCertificate returns the loaded certificate for use by
