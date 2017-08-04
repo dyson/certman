@@ -87,25 +87,7 @@ func (cm *CertMan) Watch() error {
 	}
 	cm.log.Printf("certman: watching for cert and key change")
 	cm.watching = make(chan bool)
-	go func() {
-	loop:
-		for {
-			select {
-			case <-cm.watching:
-				break loop
-			case event := <-cm.watcher.Events:
-				cm.log.Printf("certman: watch event: %v", event)
-				if err := cm.load(); err != nil {
-					cm.log.Printf("certman: can't load cert or key file: %v", err)
-				}
-			case err := <-cm.watcher.Errors:
-				cm.log.Printf("certman: error watching files: %v", err)
-			}
-		}
-		cm.log.Printf("certman: stopped watching")
-		cm.watcher.Close()
-		close(cm.watching)
-	}()
+	go cm.run()
 	return nil
 }
 
@@ -118,6 +100,26 @@ func (cm *CertMan) load() error {
 		cm.log.Printf("certman: certificate and key loaded")
 	}
 	return err
+}
+
+func (cm *CertMan) run() {
+loop:
+	for {
+		select {
+		case <-cm.watching:
+			break loop
+		case event := <-cm.watcher.Events:
+			cm.log.Printf("certman: watch event: %v", event)
+			if err := cm.load(); err != nil {
+				cm.log.Printf("certman: can't load cert or key file: %v", err)
+			}
+		case err := <-cm.watcher.Errors:
+			cm.log.Printf("certman: error watching files: %v", err)
+		}
+	}
+	cm.log.Printf("certman: stopped watching")
+	cm.watcher.Close()
+	close(cm.watching)
 }
 
 // GetCertificate returns the loaded certificate for use by
