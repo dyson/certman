@@ -46,7 +46,7 @@ import (
 func main() {
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 
-	cm, err := certman.NewCertMan("/tmp/server.crt", "/tmp/server.key")
+	cm, err := certman.New("/tmp/server.crt", "/tmp/server.key")
 	if err != nil {
 		logger.Println(err)
 	}

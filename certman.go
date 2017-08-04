@@ -1,3 +1,13 @@
+// Copyright 2017 Dyson Simmons. All rights reserved.
+// Use of this source code is governed by a MIT
+// license that can be found in the LICENSE file.
+
+// Package certman provides live reloading of the certificate and key
+// files used by the standard library http.Server. It defines a type,
+// certMan, with methods watching and getting the files.
+// Only valid certificate and key pairs are loaded and an optional
+// logger can be passed to certman for logging providing it implements
+// the logger interface.
 package certman
 
 import (
@@ -9,7 +19,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type certMan struct {
+type CertMan struct {
 	mu       sync.RWMutex
 	certFile string
 	keyFile  string
@@ -19,6 +29,7 @@ type certMan struct {
 	log      logger
 }
 
+// logger is an interface that wraps the basic Printf method.
 type logger interface {
 	Printf(string, ...interface{})
 }
@@ -27,7 +38,10 @@ type nopLogger struct{}
 
 func (l *nopLogger) Printf(format string, v ...interface{}) {}
 
-func NewCertMan(certFile, keyFile string) (*certMan, error) {
+// New creates a new certMan. The certFile and the keyFile
+// are both paths to the location of the files. Relative and
+// absolute paths are accepted.
+func New(certFile, keyFile string) (*CertMan, error) {
 	var err error
 	certFile, err = filepath.Abs(certFile)
 	if err != nil {
@@ -37,7 +51,7 @@ func NewCertMan(certFile, keyFile string) (*certMan, error) {
 	if err != nil {
 		return nil, err
 	}
-	cm := &certMan{
+	cm := &CertMan{
 		mu:       sync.RWMutex{},
 		certFile: certFile,
 		keyFile:  keyFile,
@@ -46,11 +60,18 @@ func NewCertMan(certFile, keyFile string) (*certMan, error) {
 	return cm, nil
 }
 
-func (cm *certMan) Logger(logger logger) {
+// Logger sets the logger for certMan to use. It accepts
+// a logger interface.
+func (cm *CertMan) Logger(logger logger) {
 	cm.log = logger
 }
 
-func (cm *certMan) Watch() error {
+// Watch starts watching for changes to the certificate
+// and key files. On any change the certificate and key
+// are reloaded. If there is an issue the load will fail
+// and the old (if any) certificates and keys will continue
+// to be used.
+func (cm *CertMan) Watch() error {
 	var err error
 	if cm.watcher, err = fsnotify.NewWatcher(); err != nil {
 		return errors.Wrap(err, "certman: can't create watcher")
@@ -88,7 +109,7 @@ func (cm *certMan) Watch() error {
 	return nil
 }
 
-func (cm *certMan) load() error {
+func (cm *CertMan) load() error {
 	keyPair, err := tls.LoadX509KeyPair(cm.certFile, cm.keyFile)
 	if err == nil {
 		cm.mu.Lock()
@@ -99,12 +120,16 @@ func (cm *certMan) load() error {
 	return err
 }
 
-func (cm *certMan) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+// GetCertificate returns the loaded certificate for use by
+// the TLSConfig fields GetCertificate field in a http.Server.
+func (cm *CertMan) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
 	return cm.keyPair, nil
 }
 
-func (cm *certMan) Stop() {
+// Stop tells certMan to stop watching for changes to the
+// certificate and key files.
+func (cm *CertMan) Stop() {
 	cm.watching <- false
 }
