@@ -19,6 +19,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+// A CertMan represents a certificate manager able to watch certificate
+// and key pairs for changes.
 type CertMan struct {
 	mu       sync.RWMutex
 	certFile string
