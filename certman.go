@@ -152,8 +152,16 @@ loop:
 }
 
 // GetCertificate returns the loaded certificate for use by
-// the TLSConfig fields GetCertificate field in a http.Server.
+// the GetCertificate field in tls.Config.
 func (cm *CertMan) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+	return cm.keyPair, nil
+}
+
+// GetClientCertificate returns the loaded certificate for use by
+// the GetClientCertificate field in tls.Config.
+func (cm *CertMan) GetClientCertificate(hello *tls.CertificateRequestInfo) (*tls.Certificate, error) {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
 	return cm.keyPair, nil
