@@ -69,7 +69,7 @@ func TestCertificateNotFound(t *testing.T) {
 	}
 	cm.Logger(l)
 	if err := cm.Watch(); err != nil {
-		if err.Error() != "certman: can't watch cert file: no such file or directory" {
+		if !strings.HasPrefix(err.Error(), "certman: can't watch cert file: ") {
 			t.Errorf("unexpected watch error: %v", err)
 		}
 	}
@@ -84,7 +84,7 @@ func TestKeyNotFound(t *testing.T) {
 	}
 	cm.Logger(l)
 	if err := cm.Watch(); err != nil {
-		if err.Error() != "certman: can't watch key file: no such file or directory" {
+		if !strings.HasPrefix(err.Error(), "certman: can't watch key file: ") {
 			t.Errorf("unexpected watch error: %v", err)
 		}
 	}
