@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dyson/certman"
+	"github.com/abh/certman"
 )
 
 func TestValidPair(t *testing.T) {
