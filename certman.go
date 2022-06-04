@@ -134,7 +134,7 @@ loop:
 				}
 			}
 		case event := <-cm.watcher.Events:
-			// cm.log.Printf("certman: watch event: %s (%s)", event.Name, event.Op.String())
+			cm.log.Printf("certman: watch event: %s (%s)", event.Name, event.Op.String())
 			// cm.log.Printf("certman: watch event: %+v", event)
 			for _, f := range files {
 				if event.Name == f ||
