@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -124,6 +125,7 @@ loop:
 	for {
 		select {
 		case <-cm.watching:
+			cm.log.Printf("watching triggered; break loop")
 			break loop
 		case <-ticker.C:
 			if !reload.IsZero() && time.Now().After(reload) {
@@ -134,11 +136,11 @@ loop:
 				}
 			}
 		case event := <-cm.watcher.Events:
-			cm.log.Printf("certman: watch event: %s (%s)", event.Name, event.Op.String())
+			// cm.log.Printf("certman: watch event: %s (%s)", event.Name, event.Op.String())
 			// cm.log.Printf("certman: watch event: %+v", event)
 			for _, f := range files {
 				if event.Name == f ||
-					event.Name == "..data" { // kubernetes secrets mount
+					strings.HasSuffix(event.Name, "/..data") { // kubernetes secrets mount
 					// we wait a couple seconds in case the cert and key don't update atomically
 					cm.log.Printf("%s was modified, queue reload", f)
 					reload = time.Now().Add(2 * time.Second)
