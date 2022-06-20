@@ -12,8 +12,12 @@ package certman
 
 import (
 	"crypto/tls"
+	"fmt"
+	"path"
 	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
@@ -78,11 +82,17 @@ func (cm *CertMan) Watch() error {
 	if cm.watcher, err = fsnotify.NewWatcher(); err != nil {
 		return errors.Wrap(err, "certman: can't create watcher")
 	}
-	if err = cm.watcher.Add(cm.certFile); err != nil {
-		return errors.Wrap(err, "certman: can't watch cert file")
+
+	certPath := path.Dir(cm.certFile)
+	keyPath := path.Dir(cm.keyFile)
+
+	if err = cm.watcher.Add(certPath); err != nil {
+		return errors.Wrap(err, fmt.Sprintf("certman: can't watch %s", certPath))
 	}
-	if err = cm.watcher.Add(cm.keyFile); err != nil {
-		return errors.Wrap(err, "certman: can't watch key file")
+	if keyPath != certPath {
+		if err = cm.watcher.Add(keyPath); err != nil {
+			return errors.Wrap(err, fmt.Sprintf("certman: can't watch %s", keyPath))
+		}
 	}
 	if err := cm.load(); err != nil {
 		cm.log.Printf("certman: can't load cert or key file: %v", err)
@@ -105,15 +115,36 @@ func (cm *CertMan) load() error {
 }
 
 func (cm *CertMan) run() {
+	cm.log.Printf("certman: running")
+
+	ticker := time.NewTicker(2 * time.Second)
+	files := []string{cm.certFile, cm.keyFile}
+	reload := time.Time{}
+
 loop:
 	for {
 		select {
 		case <-cm.watching:
+			cm.log.Printf("watching triggered; break loop")
 			break loop
+		case <-ticker.C:
+			if !reload.IsZero() && time.Now().After(reload) {
+				reload = time.Time{}
+				cm.log.Printf("certman: reloading")
+				if err := cm.load(); err != nil {
+					cm.log.Printf("certman: can't load cert or key file: %v", err)
+				}
+			}
 		case event := <-cm.watcher.Events:
-			cm.log.Printf("certman: watch event: %v", event)
-			if err := cm.load(); err != nil {
-				cm.log.Printf("certman: can't load cert or key file: %v", err)
+			// cm.log.Printf("certman: watch event: %s (%s)", event.Name, event.Op.String())
+			// cm.log.Printf("certman: watch event: %+v", event)
+			for _, f := range files {
+				if event.Name == f ||
+					strings.HasSuffix(event.Name, "/..data") { // kubernetes secrets mount
+					// we wait a couple seconds in case the cert and key don't update atomically
+					cm.log.Printf("%s was modified, queue reload", f)
+					reload = time.Now().Add(2 * time.Second)
+				}
 			}
 		case err := <-cm.watcher.Errors:
 			cm.log.Printf("certman: error watching files: %v", err)
@@ -121,11 +152,20 @@ loop:
 	}
 	cm.log.Printf("certman: stopped watching")
 	cm.watcher.Close()
+	ticker.Stop()
 }
 
 // GetCertificate returns the loaded certificate for use by
-// the TLSConfig fields GetCertificate field in a http.Server.
+// the GetCertificate field in tls.Config.
 func (cm *CertMan) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+	return cm.keyPair, nil
+}
+
+// GetClientCertificate returns the loaded certificate for use by
+// the GetClientCertificate field in tls.Config.
+func (cm *CertMan) GetClientCertificate(hello *tls.CertificateRequestInfo) (*tls.Certificate, error) {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
 	return cm.keyPair, nil
