@@ -45,20 +45,24 @@ func (l *nopLogger) Printf(format string, v ...interface{}) {}
 // absolute paths are accepted.
 func New(certFile, keyFile string) (*CertMan, error) {
 	var err error
+
 	certFile, err = filepath.Abs(certFile)
 	if err != nil {
 		return nil, err
 	}
+
 	keyFile, err = filepath.Abs(keyFile)
 	if err != nil {
 		return nil, err
 	}
+
 	cm := &CertMan{
 		mu:       sync.RWMutex{},
 		certFile: certFile,
 		keyFile:  keyFile,
 		log:      &nopLogger{},
 	}
+
 	return cm, nil
 }
 
@@ -75,21 +79,29 @@ func (cm *CertMan) Logger(logger logger) {
 // to be used.
 func (cm *CertMan) Watch() error {
 	var err error
+
 	if cm.watcher, err = fsnotify.NewWatcher(); err != nil {
-		return errors.Wrap(err, "certman: can't create watcher")
+		return errors.Wrap(err, "can't create watcher")
 	}
+
 	if err = cm.watcher.Add(cm.certFile); err != nil {
-		return errors.Wrap(err, "certman: can't watch cert file")
+		return errors.Wrap(err, "can't watch cert file")
 	}
+
 	if err = cm.watcher.Add(cm.keyFile); err != nil {
-		return errors.Wrap(err, "certman: can't watch key file")
+		return errors.Wrap(err, "can't watch key file")
 	}
+
 	if err := cm.load(); err != nil {
-		cm.log.Printf("certman: can't load cert or key file: %v", err)
+		cm.log.Printf("can't load cert or key file: %v", err)
 	}
-	cm.log.Printf("certman: watching for cert and key change")
+
+	cm.log.Printf("watching for cert and key change")
+
 	cm.watching = make(chan bool)
+
 	go cm.run()
+
 	return nil
 }
 
@@ -99,8 +111,9 @@ func (cm *CertMan) load() error {
 		cm.mu.Lock()
 		cm.keyPair = &keyPair
 		cm.mu.Unlock()
-		cm.log.Printf("certman: certificate and key loaded")
+		cm.log.Printf("certificate and key loaded")
 	}
+
 	return err
 }
 
@@ -111,15 +124,17 @@ loop:
 		case <-cm.watching:
 			break loop
 		case event := <-cm.watcher.Events:
-			cm.log.Printf("certman: watch event: %v", event)
+			cm.log.Printf("watch event: %v", event)
 			if err := cm.load(); err != nil {
-				cm.log.Printf("certman: can't load cert or key file: %v", err)
+				cm.log.Printf("can't load cert or key file: %v", err)
 			}
 		case err := <-cm.watcher.Errors:
-			cm.log.Printf("certman: error watching files: %v", err)
+			cm.log.Printf("error watching files: %v", err)
 		}
 	}
-	cm.log.Printf("certman: stopped watching")
+
+	cm.log.Printf("stopped watching")
+
 	cm.watcher.Close()
 }
 
@@ -128,6 +143,7 @@ loop:
 func (cm *CertMan) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
+
 	return cm.keyPair, nil
 }
 
