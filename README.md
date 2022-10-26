@@ -1,6 +1,6 @@
 # Certman
 
-[![Go project version](https://badge.fury.io/go/github.com%2Fdyson%2Fcertman.svg)](https://badge.fury.io/go/github.com%2Fdyson%2Fcertman)
+![version](https://img.shields.io/github/v/tag/dyson/certman?label=version)
 [![Build Status](https://travis-ci.org/dyson/certman.svg?branch=master)](https://travis-ci.org/dyson/certman)
 [![Coverage Status](https://coveralls.io/repos/github/dyson/certman/badge.svg?branch=master)](https://coveralls.io/github/dyson/certman?branch=master)
 [![Code Climate](https://codeclimate.com/github/dyson/certman/badges/gpa.svg)](https://codeclimate.com/github/dyson/certman)
