@@ -24,22 +24,22 @@ func TestValidPair(t *testing.T) {
 
 	cm, err := certman.New("./testdata/server1.crt", "./testdata/server1.key")
 	if err != nil {
-		t.Errorf("could not create certman: %v", err)
+		t.Fatalf("could not create certman: %v", err)
 	}
 
 	cm.Logger(l)
 	if err := cm.Watch(); err != nil {
-		t.Errorf("could not watch files: %v", err)
+		t.Fatalf("could not watch files: %v", err)
 	}
 
-	logWant := "certman: certificate and key loaded\n" +
-		"certman: watching for cert and key change\n"
+	logWant := "certificate and key loaded\n" +
+		"watching for cert and key change\n"
 	logGot := buf.String()
 
 	if logGot != logWant {
 		t.Log("log output expected:", logWant)
 		t.Log("log output received:", logGot)
-		t.Errorf("log from certman not as expected")
+		t.Fatal("log from certman not as expected")
 	}
 }
 
@@ -49,22 +49,22 @@ func TestInvalidPair(t *testing.T) {
 
 	cm, err := certman.New("./testdata/server1.crt", "./testdata/server2.key")
 	if err != nil {
-		t.Errorf("could not create certman: %v", err)
+		t.Fatalf("could not create certman: %v", err)
 	}
 
 	cm.Logger(l)
 	if err := cm.Watch(); err != nil {
-		t.Errorf("could not watch files: %v", err)
+		t.Fatalf("could not watch files: %v", err)
 	}
 
-	logWant := "certman: can't load cert or key file: tls: private key does not match public key\n" +
-		"certman: watching for cert and key change\n"
+	logWant := "can't load cert or key file: tls: private key does not match public key\n" +
+		"watching for cert and key change\n"
 	logGot := buf.String()
 
 	if logGot != logWant {
 		t.Log("log output expected:", logWant)
 		t.Log("log output received:", logGot)
-		t.Error("test didn't in the way expected")
+		t.Fatalf("test didn't in the way expected")
 	}
 }
 
@@ -74,13 +74,13 @@ func TestCertificateNotFound(t *testing.T) {
 
 	cm, err := certman.New("./testdata/nothere.crt", "./testdata/server2.key")
 	if err != nil {
-		t.Errorf("could not create certman: %v", err)
+		t.Fatalf("could not create certman: %v", err)
 	}
 
 	cm.Logger(l)
 	if err := cm.Watch(); err != nil {
-		if !strings.HasPrefix(err.Error(), "certman: can't watch cert file:") {
-			t.Errorf("unexpected watch error: %v", err)
+		if !strings.HasPrefix(err.Error(), "can't watch cert file:") {
+			t.Fatalf("unexpected watch error: %v", err)
 		}
 	}
 }
@@ -91,13 +91,13 @@ func TestKeyNotFound(t *testing.T) {
 	cm, err := certman.New("./testdata/server1.crt", "./testdata/nothere.key")
 
 	if err != nil {
-		t.Errorf("could not create certman: %v", err)
+		t.Fatalf("could not create certman: %v", err)
 	}
 
 	cm.Logger(l)
 	if err := cm.Watch(); err != nil {
-		if !strings.HasPrefix(err.Error(), "certman: can't watch key file:") {
-			t.Errorf("unexpected watch error: %v", err)
+		if !strings.HasPrefix(err.Error(), "can't watch key file:") {
+			t.Fatalf("unexpected watch error: %v", err)
 		}
 	}
 }
@@ -110,22 +110,22 @@ func TestValidPairValidPair(t *testing.T) {
 
 	cm, err := certman.New("./testdata/server.crt", "./testdata/server.key")
 	if err != nil {
-		t.Errorf("could not create certman: %v", err)
+		t.Fatalf("could not create certman: %v", err)
 	}
 
 	cm.Logger(l)
 	if err := cm.Watch(); err != nil {
-		t.Errorf("could not watch files: %v", err)
+		t.Fatalf("could not watch files: %v", err)
 	}
 
-	logWant := "certman: certificate and key loaded\n" +
-		"certman: watching for cert and key change\n"
+	logWant := "certificate and key loaded\n" +
+		"watching for cert and key change\n"
 	logGot := buf.String()
 
 	if logGot != logWant {
 		t.Log("log output expected:", logWant)
 		t.Log("log output received:", logGot)
-		t.Errorf("log from certman not as expected")
+		t.Fatalf("log from certman not as expected")
 	}
 
 	buf.Reset()
@@ -133,13 +133,13 @@ func TestValidPairValidPair(t *testing.T) {
 
 	time.Sleep(200 * time.Millisecond)
 
-	logWant = "certman: certificate and key loaded"
+	logWant = "certificate and key loaded"
 	logGot = strings.Split(buf.String(), "\n")[3]
 
 	if logGot != logWant {
 		t.Log("log output expected:", logWant)
 		t.Log("log output received:", logGot)
-		t.Errorf("log from certman not as expected")
+		t.Fatalf("log from certman not as expected")
 	}
 }
 
@@ -151,22 +151,22 @@ func TestValidPairInvalidPair(t *testing.T) {
 
 	cm, err := certman.New("./testdata/server.crt", "./testdata/server.key")
 	if err != nil {
-		t.Errorf("could not create certman: %v", err)
+		t.Fatalf("could not create certman: %v", err)
 	}
 
 	cm.Logger(l)
 	if err := cm.Watch(); err != nil {
-		t.Errorf("could not watch files: %v", err)
+		t.Fatalf("could not watch files: %v", err)
 	}
 
-	logWant := "certman: certificate and key loaded\n" +
-		"certman: watching for cert and key change\n"
+	logWant := "certificate and key loaded\n" +
+		"watching for cert and key change\n"
 	logGot := buf.String()
 
 	if logGot != logWant {
 		t.Log("log output expected:", logWant)
 		t.Log("log output received:", logGot)
-		t.Errorf("log from certman not as expected")
+		t.Fatalf("log from certman not as expected")
 	}
 
 	buf.Reset()
@@ -175,13 +175,13 @@ func TestValidPairInvalidPair(t *testing.T) {
 
 	time.Sleep(200 * time.Millisecond)
 
-	logWant = "certman: can't load cert or key file: tls: private key does not match public key"
+	logWant = "can't load cert or key file: tls: private key does not match public key"
 	logGot = strings.Split(buf.String(), "\n")[3]
 
 	if logGot != logWant {
 		t.Log("log output expected:", logWant)
 		t.Log("log output received:", logGot)
-		t.Errorf("log from certman not as expected")
+		t.Fatalf("log from certman not as expected")
 	}
 }
 
@@ -193,22 +193,22 @@ func TestStop(t *testing.T) {
 
 	cm, err := certman.New("./testdata/server.crt", "./testdata/server.key")
 	if err != nil {
-		t.Errorf("could not create certman: %v", err)
+		t.Fatalf("could not create certman: %v", err)
 	}
 
 	cm.Logger(l)
 	if err := cm.Watch(); err != nil {
-		t.Errorf("could not watch files: %v", err)
+		t.Fatalf("could not watch files: %v", err)
 	}
 
-	logWant := "certman: certificate and key loaded\n" +
-		"certman: watching for cert and key change\n"
+	logWant := "certificate and key loaded\n" +
+		"watching for cert and key change\n"
 	logGot := buf.String()
 
 	if logGot != logWant {
 		t.Log("log output expected:", logWant)
 		t.Log("log output received:", logGot)
-		t.Errorf("log from certman not as expected")
+		t.Fatalf("log from certman not as expected")
 	}
 
 	buf.Reset()
@@ -217,40 +217,40 @@ func TestStop(t *testing.T) {
 	copyPair("./testdata/server2.crt", "./testdata/server2.key")
 	time.Sleep(200 * time.Millisecond)
 
-	logWant = "certman: stopped watching\n"
+	logWant = "stopped watching\n"
 	logGot = buf.String()
 
 	if logGot != logWant {
 		t.Log("log output expected:", logWant)
 		t.Log("log output received:", logGot)
-		t.Errorf("log from certman not as expected")
+		t.Fatalf("log from certman not as expected")
 	}
 }
 
 func TestGetCertificate(t *testing.T) {
 	cm, err := certman.New("./testdata/server1.crt", "./testdata/server1.key")
 	if err != nil {
-		t.Errorf("could not create certman: %v", err)
+		t.Fatalf("could not create certman: %v", err)
 	}
 
 	if err := cm.Watch(); err != nil {
-		t.Errorf("could not watch files: %v", err)
+		t.Fatalf("could not watch files: %v", err)
 	}
 
 	hello := &tls.ClientHelloInfo{}
 
 	cmCert, err := cm.GetCertificate(hello)
 	if err != nil {
-		t.Error("could not get certman certificate")
+		t.Fatalf("could not get certman certificate")
 	}
 
 	expectedCert, _ := tls.LoadX509KeyPair("./testdata/server1.crt", "./testdata/server1.key")
 	if err != nil {
-		t.Errorf("could not load certificate and key files to test: %v", err)
+		t.Fatalf("could not load certificate and key files to test: %v", err)
 	}
 
 	if !reflect.DeepEqual(cmCert.Certificate, expectedCert.Certificate) {
-		t.Errorf("certman certificate doesn't match expected certificate")
+		t.Fatalf("certman certificate doesn't match expected certificate")
 	}
 
 }
