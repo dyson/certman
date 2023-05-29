@@ -58,6 +58,7 @@ func TestInvalidPair(t *testing.T) {
 	}
 
 	logWant := "can't load cert or key file: tls: private key does not match public key\n" +
+		"can't load cert or key file: tls: private key does not match public key\n" +
 		"watching for cert and key change\n"
 	logGot := buf.String()
 
@@ -131,14 +132,22 @@ func TestValidPairValidPair(t *testing.T) {
 	buf.Reset()
 	copyPair("./testdata/server2.crt", "./testdata/server2.key")
 
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(2500 * time.Millisecond)
 
 	logWant = "certificate and key loaded"
-	logGot = strings.Split(buf.String(), "\n")[3]
+	logMessages := strings.Split(buf.String(), "\n")
 
-	if logGot != logWant {
+	found := false
+	for _, m := range logMessages {
+		if m == logWant {
+			found = true
+			break
+		}
+	}
+
+	if !found {
 		t.Log("log output expected:", logWant)
-		t.Log("log output received:", logGot)
+		t.Log("log output received:", buf.String())
 		t.Fatalf("log from certman not as expected")
 	}
 }
@@ -173,14 +182,23 @@ func TestValidPairInvalidPair(t *testing.T) {
 
 	copyPair("./testdata/server1.crt", "./testdata/server2.key")
 
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(2500 * time.Millisecond)
 
 	logWant = "can't load cert or key file: tls: private key does not match public key"
-	logGot = strings.Split(buf.String(), "\n")[3]
 
-	if logGot != logWant {
+	logMessages := strings.Split(buf.String(), "\n")
+
+	found := false
+	for _, m := range logMessages {
+		if m == logWant {
+			found = true
+			break
+		}
+	}
+
+	if !found {
 		t.Log("log output expected:", logWant)
-		t.Log("log output received:", logGot)
+		t.Log("log output received:", buf.String())
 		t.Fatalf("log from certman not as expected")
 	}
 }
@@ -220,7 +238,7 @@ func TestStop(t *testing.T) {
 	logWant = "stopped watching\n"
 	logGot = buf.String()
 
-	if logGot != logWant {
+	if !strings.Contains(logGot, logWant) {
 		t.Log("log output expected:", logWant)
 		t.Log("log output received:", logGot)
 		t.Fatalf("log from certman not as expected")

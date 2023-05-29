@@ -117,18 +117,21 @@ func (cm *CertMan) load() error {
 	keyPair, err := tls.LoadX509KeyPair(cm.certFile, cm.keyFile)
 	if err == nil {
 		cm.mu.Lock()
+		defer cm.mu.Unlock()
 		cm.keyPair = &keyPair
-		cm.mu.Unlock()
 		cm.log.Printf("certificate and key loaded")
+		return nil
 	}
+
+	cm.log.Printf("can't load cert or key file: %s", err)
 
 	return err
 }
 
 func (cm *CertMan) run() {
-	cm.log.Printf("certman: running")
+	cm.log.Printf("running")
 
-	ticker := time.NewTicker(2 * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
 	files := []string{cm.certFile, cm.keyFile}
 	reload := time.Time{}
 
@@ -141,9 +144,9 @@ loop:
 		case <-ticker.C:
 			if !reload.IsZero() && time.Now().After(reload) {
 				reload = time.Time{}
-				cm.log.Printf("certman: reloading")
+				cm.log.Printf("reloading")
 				if err := cm.load(); err != nil {
-					cm.log.Printf("certman: can't load cert or key file: %v", err)
+					cm.log.Printf("can't load cert or key file: %v", err)
 				}
 			}
 		case event := <-cm.watcher.Events:
@@ -152,9 +155,11 @@ loop:
 			for _, f := range files {
 				if event.Name == f ||
 					strings.HasSuffix(event.Name, "/..data") { // kubernetes secrets mount
+					if reload.IsZero() {
+						cm.log.Printf("%s was modified (%s), queue reload", f, event.Op.String())
+					}
 					// we wait a couple seconds in case the cert and key don't update atomically
-					cm.log.Printf("%s was modified, queue reload", f)
-					reload = time.Now().Add(2 * time.Second)
+					reload = time.Now().Add(1 * time.Second)
 				}
 			}
 		case err := <-cm.watcher.Errors:
